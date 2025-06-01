@@ -1,5 +1,6 @@
+import './App.css'
 import { Routes, Route, Link } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
+import Dashboard from '@/pages/Dashboard';
 
 function App() {
   return (
@@ -9,7 +10,6 @@ function App() {
         <nav>
           <ul>
             <li className="mb-2"><Link to="/">Dashboard</Link></li>
-            {/* Add more links here */}
           </ul>
         </nav>
       </aside>
@@ -19,7 +19,7 @@ function App() {
         </Routes>
       </main>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

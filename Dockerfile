@@ -1,15 +1,24 @@
-# Use official Node image
-FROM node:20-alpine AS build
+# Dockerfile
+
+FROM node:20-alpine
 
 WORKDIR /app
-COPY package.json package-lock.json ./
+
+# Install dependencies
+COPY package*.json ./
 RUN npm install
+
+# Copy the rest (for production builds)
 COPY . .
+
+# Build production build (only when used)
 RUN npm run build
 
-# Serve with a simple static server
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+# Install serve globally for prod serve
+RUN npm install -g serve
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Expose dev + prod ports
+EXPOSE 5173 3000
+
+# Default to prod mode
+CMD ["serve", "-s", "dist", "-l", "3000"]
