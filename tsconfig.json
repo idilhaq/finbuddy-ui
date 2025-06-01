@@ -11,6 +11,7 @@
       "@/*": ["src/*"]
     },
     "types": ["node"],
+    "noEmit": true
   },
   "include": ["src"]
 }
