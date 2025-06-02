@@ -11,28 +11,32 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 
-type LoginFormProps = {
+type RegistrationFormProps = {
   className?: string
-  onSubmit: (payload: { email: string; password: string }) => void
+  onSubmit: (payload: { email: string; password: string, name: string, role: string }) => void
 }
 
-export function LoginForm({
+export function RegistrationForm({
   className,
   onSubmit,
-}: LoginFormProps) {
+}: RegistrationFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [isPasswordsMatch, setIsPasswordsMatch] = useState(true)
+  const [name, setName] = useState("")
+  const [role, setRole] = useState("user")
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
-            Login with your Google account
+            Register with your Google account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); onSubmit({ email, password }); }}>
+          <form onSubmit={(e) => { e.preventDefault(); onSubmit({ email, password, name, role }); }}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
                 <Button variant="outline" className="w-full">
@@ -42,7 +46,7 @@ export function LoginForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Login with Google
+                  Register with Google
                 </Button>
               </div>
               <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -51,6 +55,17 @@ export function LoginForm({
                 </span>
               </div>
               <div className="grid gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    name="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -66,23 +81,31 @@ export function LoginForm({
                 <div className="grid gap-3">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </a>
                   </div>
                   <Input id="password" type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Confirm Password</Label>
+                  </div>
+                  <Input id="password-confirm" type="password" name="password-confirm" value={confirmPassword} onChange={(e) => {
+                    setConfirmPassword(e.target.value)
+                    setIsPasswordsMatch(e.target.value === password)
+                  }} required />
+                  {!isPasswordsMatch && (
+                    <div className="text-red-500 text-sm text-center">
+                      Passwords do not match!
+                    </div>
+                  )}
+                </div>
                 <Button type="submit" className="w-full">
-                  Login
+                  Register
                 </Button>
               </div>
               <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <a href="/register" className="underline underline-offset-4">
-                  Sign up
+                Already have an account?{" "}
+                <a href="/login" className="underline underline-offset-4">
+                  Sign in
                 </a>
               </div>
             </div>
