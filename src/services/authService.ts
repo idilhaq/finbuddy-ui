@@ -13,9 +13,9 @@ export const authService = {
     }
   },
 
-  register: async (email: string, password: string) => {
+  register: async (email: string, password: string, name: string, role: string) => {
     try {
-      const response = await api.post('/auth/register', { email, password })
+      const response = await api.post('/auth/register', { email, password, name, role })
       const token = response.data.token
       localStorage.setItem('token', token)
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`
