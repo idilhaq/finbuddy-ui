@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getDashboardSummary } from "@/services/dashboardService"
-import { getCurrentUser, getUserInfo } from '@/services/userService'
+import { getUserInfo } from '@/services/userService'
+import { getUserExpenses } from '@/services/expenseService'
+import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 interface BudgetPlan {
   needs: number
@@ -26,37 +28,49 @@ type UserData = {
   role: string
 }
 
+type UserExpenses = {
+  id: string
+  category: string
+  amount: number
+  note: string
+  date: string
+  created_at: string
+  updated_at: string
+}
+
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null)
   const [dashboardLoading, setLoading] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
+  const [userExpenses, setUserExpenses] = useState<UserExpenses[] | null>(null)
   const [userDataLoading, setUserDataLoading] = useState(false)
 
   const [error, setError] = useState<string | null>(null)
 
-  const [userId, setUserId] = useState<string | null>('')
-
   useEffect(() => {
-    const fetchUserId = async () => {
-      const result = await getCurrentUser()
+    const fetchUserInfo = async () => {
+      setUserDataLoading(true)
+      setError(null)
+      const result = await getUserInfo()
       if (result.success) {
-        setUserId(result.data)
+        setUserData(result.data)
       } else {
         setError(result.error)
       }
+      setUserDataLoading(false)
     }
-    fetchUserId()
+    fetchUserInfo()
   }, [])
-  
-  const month = '2025-05';
+
+  const month = '2025-06';
 
   useEffect(() => {
-    if (!userId) return
+    if (!userData?.id) return
 
     const fetchData = async () => {
       setLoading(true)
       setError(null)
-      const result = await getDashboardSummary(userId, month)
+      const result = await getDashboardSummary(userData?.id, month)
       if (result.success) {
         setDashboardData(result.data)
       } else {
@@ -65,21 +79,20 @@ function Dashboard() {
       setLoading(false)
     }
 
-    const fetchUserData = async () => {
-      setUserDataLoading(true)
-      setError(null)
-      const result = await getUserInfo(userId)
+    fetchData()
+  }, [userData, month])
+
+  useEffect(() => {
+    const fetchUserExpenses = async () => {
+      const result = await getUserExpenses()
       if (result.success) {
-        setUserData(result.data)
+        setUserExpenses(result.data)
       } else {
         setError(result.error)
       }
-      setUserDataLoading(false)
     }
-
-    fetchData()
-    fetchUserData()
-  }, [userId, month])
+    fetchUserExpenses()
+  }, [userData])
 
   return (
     <div className="p-6">
@@ -132,6 +145,43 @@ function Dashboard() {
             </Card>
           </div>
         )
+      )}
+      <div className="my-6">
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+          onClick={() => window.location.href = '/expenses'}
+        >
+          Add Expense
+        </button>
+      </div>
+      {userExpenses && (
+        <Table>
+          <TableCaption>A list of your recent invoices.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Invoice</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {userExpenses.map((expense) => (
+              <TableRow key={expense.id}>
+                <TableCell className="font-medium">{expense.category}</TableCell>
+                <TableCell>{expense.date}</TableCell>
+                <TableCell>{expense.created_at}</TableCell>
+                <TableCell className="text-right">{expense.amount}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={3}>Total</TableCell>
+              <TableCell className="text-right">{userExpenses.reduce((sum, expense) => sum + expense.amount, 0)}</TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
       )}
     </div>
   )
