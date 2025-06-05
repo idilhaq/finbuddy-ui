@@ -6,6 +6,7 @@ import Register from "@/pages/Register"
 import Login from "@/pages/Login"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { authService } from "@/services/authService"
+import Expenses from "./pages/Expenses"
 
 authService.setAuthHeader()
 
@@ -20,6 +21,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expenses"
+        element={
+          <ProtectedRoute>
+            <Expenses />
           </ProtectedRoute>
         }
       />
