@@ -1,10 +1,18 @@
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { AppSidebar } from "@/components/app-sidebar"
+import { ChartAreaInteractive } from "@/components/chart-area-interactive"
+import { DataTable } from "@/components/data-table"
+import { SectionCards } from "@/components/section-cards"
+import { SiteHeader } from "@/components/site-header"
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
+
+import data from "@/app/dashboard/data.json"
+import { useEffect, useState } from "react"
+import { getUserInfo } from "@/services/userService"
 import { getDashboardSummary } from "@/services/dashboardService"
-import { getUserInfo } from '@/services/userService'
-import { getUserExpenses } from '@/services/expenseService'
-import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { getUserExpenses } from "@/services/expenseService"
 
 interface BudgetPlan {
   needs: number
@@ -21,11 +29,12 @@ type DashboardResponse = {
   wants: number
 }
 
-type UserData = {
+export type UserData = {
   id: string
   name: string
   email: string
   role: string
+  avatar: string
 }
 
 type UserExpenses = {
@@ -41,7 +50,7 @@ type UserExpenses = {
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null)
   const [dashboardLoading, setLoading] = useState(false)
-  const [userData, setUserData] = useState<UserData | null>(null)
+  const [userData, setUserData] = useState<UserData>()
   const [userExpenses, setUserExpenses] = useState<UserExpenses[] | null>(null)
   const [userDataLoading, setUserDataLoading] = useState(false)
 
@@ -93,97 +102,31 @@ function Dashboard() {
     }
     fetchUserExpenses()
   }, [userData])
-
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">FinBuddy Dashboard</h2>
-      <h3 className="text-2xl font-bold mb-4">Welcome, {userData?.name}</h3>
-      {dashboardLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 border rounded-lg bg-white shadow">
-              <Skeleton className="h-6 w-1/2 mb-4" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full" />
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" userData={userData} />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <SectionCards />
+              <div className="px-4 lg:px-6">
+                <ChartAreaInteractive />
+              </div>
+              <DataTable data={data} />
             </div>
-          ))}
-        </div>
-      ) : (
-        dashboardData && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Budget Plan</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Needs: {dashboardData.needs}</p>
-                <p>Wants: {dashboardData.wants}</p>
-                <p>Savings: {dashboardData.savings}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Current Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Needs Spent: {dashboardData.needs}</p>
-                <p>Wants Spent: {dashboardData.wants}</p>
-                <p>Savings Added: {dashboardData.savings}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Totals</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Total Expenses: {dashboardData.total_expenses}</p>
-                <p>Total Savings: {dashboardData.total_savings}</p>
-              </CardContent>
-            </Card>
           </div>
-        )
-      )}
-      <div className="my-6">
-        <button
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-          onClick={() => window.location.href = '/expenses'}
-        >
-          Add Expense
-        </button>
-      </div>
-      {userExpenses && (
-        <Table>
-          <TableCaption>A list of your recent invoices.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">Invoice</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {userExpenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="font-medium">{expense.category}</TableCell>
-                <TableCell>{expense.date}</TableCell>
-                <TableCell>{expense.created_at}</TableCell>
-                <TableCell className="text-right">{expense.amount}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={3}>Total</TableCell>
-              <TableCell className="text-right">{userExpenses.reduce((sum, expense) => sum + expense.amount, 0)}</TableCell>
-            </TableRow>
-          </TableFooter>
-        </Table>
-      )}
-    </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
 
